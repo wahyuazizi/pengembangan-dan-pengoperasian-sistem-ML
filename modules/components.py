@@ -62,9 +62,9 @@ def init_components(
     
     trainer = Trainer(
         module_file = os.path.abspath(training_module),
-        schema = schema_gen.outputs['schema'],
-        examples = example_gen.outputs['examples'],
+        examples = transform.outputs['transformed_examples'],
         transform_graph = transform.outputs['transform_graph'],
+        schema = schema_gen.outputs['schema'],
         train_args = trainer_pb2.TrainArgs(
             splits=['train'],
             num_steps=training_steps
@@ -85,23 +85,24 @@ def init_components(
         tfma.SlicingSpec(),
         tfma.SlicingSpec(feature_keys=[
             "gender",
-            "partner"
+            "Partner"
         ])
     ]
 
     metrics_specs = [
-        tfma.MetricsSpecs(metrics=[
+        tfma.MetricsSpec(metrics=[
             tfma.MetricConfig(class_name="AUC"),
             tfma.MetricConfig(class_name="Precision"),
             tfma.MetricConfig(class_name="Recall"),
             tfma.MetricConfig(class_name="ExampleCount"),
             tfma.MetricConfig(class_name="BinaryAccuracy",
-                              threshold=tfma.GenericValueThreshold(
+                              threshold=tfma.MetricThreshold(
+                                  value_threshold=tfma.GenericValueThreshold(
                                   lower_bound={'value': 0.5}
                               ),
                               change_threshold=tfma.GenericChangeThreshold(
                                   direction=tfma.MetricDirection.HIGHER_IS_BETTER,
-                                  absolute={'value':0.0001}
+                                  absolute={'value':0.0001})
                               )
             )
         ])
@@ -123,9 +124,23 @@ def init_components(
     pusher = Pusher(
         model = trainer.outputs['model'],
         model_blessing = evaluator.outputs['blessing'],
-        push_destination= pusher_pb2.PushDestination.FileSystem(
-            base_directory=serving_model_dir
+        push_destination= pusher_pb2.PushDestination(
+            filesystem=pusher_pb2.PushDestination.Filesystem(
+                base_directory=serving_model_dir
+            )
         )
+    )
+
+    components = (
+        example_gen,
+        statistics_gen,
+        schema_gen,
+        example_validator,
+        transform,
+        trainer,
+        model_resolver,
+        evaluator,
+        pusher
     )
 
     
