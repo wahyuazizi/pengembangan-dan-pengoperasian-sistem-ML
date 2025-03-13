@@ -11,11 +11,11 @@ CATEGORICAL_FEATURES = {
     "gender":2
 }
 
-NUMERICAL_FEATURES = {
+NUMERICAL_FEATURES = [
     "MonthlyCharges",
     "TotalCharges",
     "tenure"
-}
+]
 
 LABEL_KEY = "Churn"
 

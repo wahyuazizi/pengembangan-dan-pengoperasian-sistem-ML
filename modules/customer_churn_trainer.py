@@ -48,7 +48,7 @@ def get_model(show_summary=True):
 
 def gzip_reader_fn(filenames):
     """Loads comporessed data"""
-    return tf.data.TFRecordDataset(filenames, commpression_type='GZIP')
+    return tf.data.TFRecordDataset(filenames, compression_type='GZIP')
 
 def get_serve_tf_examples_fn(model, tf_transform_output):
     """Returns a function that parses a serialized tf.Example."""
@@ -68,8 +68,7 @@ def get_serve_tf_examples_fn(model, tf_transform_output):
 
         outputs = model(transformed_features)
         return {"outputs": outputs}
-    
-    return get_serve_tf_examples_fn
+    return serve_tf_examples_fn
 
 def input_fn(file_pattern, tf_transform_output, batch_size=64):
     """Generates features and labels for tuning/training.
@@ -118,11 +117,11 @@ def run_fn(fn_args):
 
     model.fit(
         train_datset,
-        step_per_epoch=fn_args.train_steps,
+        steps_per_epoch=fn_args.train_steps,
         validation_data=eval_datset,
         validation_steps=fn_args.eval_steps,
         callbacks=[tensorboard_callback],
-        epoch=10
+        epochs=10
     )
 
     signatures = {
