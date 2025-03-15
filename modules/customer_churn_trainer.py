@@ -3,12 +3,13 @@ import tensorflow as tf
 from keras.utils.vis_utils import plot_model
 import tensorflow_transform as tft
 
-from customer_churn_transform import(
+from modules.customer_churn_transform import (
     CATEGORICAL_FEATURES,
     LABEL_KEY,
     NUMERICAL_FEATURES,
     transformed_name,
 )
+
 
 def get_model(show_summary=True):
     """
@@ -46,9 +47,11 @@ def get_model(show_summary=True):
 
     return model
 
+
 def gzip_reader_fn(filenames):
     """Loads comporessed data"""
     return tf.data.TFRecordDataset(filenames, compression_type='GZIP')
+
 
 def get_serve_tf_examples_fn(model, tf_transform_output):
     """Returns a function that parses a serialized tf.Example."""
@@ -70,12 +73,13 @@ def get_serve_tf_examples_fn(model, tf_transform_output):
         return {"outputs": outputs}
     return serve_tf_examples_fn
 
+
 def input_fn(file_pattern, tf_transform_output, batch_size=64):
     """Generates features and labels for tuning/training.
     Args:
         file_pattern: input tfrecord file pattern.
         tf_transform_output: A TFTransformOutput.
-        batch_size: representing the number of consecutive elements of 
+        batch_size: representing the number of consecutive elements of
         returned dataset to combine in a single batch
     Returns:
         A dataset that contains (features, indices) tuple where features
@@ -97,13 +101,14 @@ def input_fn(file_pattern, tf_transform_output, batch_size=64):
 
     return dataset
 
+
 def run_fn(fn_args):
     """Train the model based on given args.
     Args:
     fn_args: Holds args used to train the model as name/value pairs.
     """
 
-    tf_transform_output =tft.TFTransformOutput(fn_args.transform_output)
+    tf_transform_output = tft.TFTransformOutput(fn_args.transform_output)
 
     train_datset = input_fn(fn_args.train_files, tf_transform_output, 64)
     eval_datset = input_fn(fn_args.eval_files, tf_transform_output, 64)

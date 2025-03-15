@@ -1,6 +1,4 @@
-
 import os
-import tensorflow as tf
 import tensorflow_model_analysis as tfma
 from tfx.components import (
     CsvExampleGen,
